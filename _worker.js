@@ -6628,8 +6628,8 @@ async function nginx() {
 		<div class="title">📞 联系方式</div>
 		<div class="contact">
 			<p>技术支持：Rabbie <span class="glow">提供国外平台代充服务</span></p>
-			<p>微信：Realive8</p>
-			<p>QQ：595909839</p>
+			<p>info@rabbiewu.com</p>
+			<p>TG：@rabbiewu</p>
 		</div>
 		</div>
 
