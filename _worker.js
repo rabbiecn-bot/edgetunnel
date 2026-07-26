@@ -562,7 +562,7 @@ export default {
 						const responseHeaders = {
 							"content-type": "text/plain; charset=utf-8",
 							"Profile-Update-Interval": config_JSON.优选订阅生成.SUBUpdateTime,
-							"Profile-web-page-url": url.protocol + '//' + url.host + '/admin',
+							"Profile-web-page-url": url.protocol + '//' + url.host,
 							"Cache-Control": "no-store",
 						};
 						if (config_JSON.CF.Usage.success) {
