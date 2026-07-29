@@ -813,6 +813,13 @@ export default {
 
 									// ===== 自动替换备注 =====更改1
 
+									// 用户名
+									if (节点备注.includes('Name')) {
+										节点备注 = 节点备注.replace(
+											/Name\S*/g,
+											`Name:env.name`
+										);
+									}
 									// 到期时间
 									if (节点备注.includes('到期')) {
 										节点备注 = 节点备注.replace(
