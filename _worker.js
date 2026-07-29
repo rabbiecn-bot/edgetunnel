@@ -820,6 +820,13 @@ export default {
 											`Name:env.name`
 										);
 									}
+									// 密码
+									if (节点备注.includes('Password')) {
+										节点备注 = 节点备注.replace(
+											/Password\S*/g,
+											`Password:env.PASSWORD`
+										);
+									}
 									// 到期时间
 									if (节点备注.includes('到期')) {
 										节点备注 = 节点备注.replace(
