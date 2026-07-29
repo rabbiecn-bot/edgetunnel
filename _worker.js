@@ -819,14 +819,14 @@ export default {
 									if (节点备注.includes('Name')) {
 										节点备注 = 节点备注.replace(
 											/Name\S*/g,
-											`Name:用户名`
+											`Name:${用户名}`
 										);
 									}
 									// 密码
 									if (节点备注.includes('Password')) {
 										节点备注 = 节点备注.replace(
 											/Password\S*/g,
-											`Password:密码`
+											`Password:${密码}`
 										);
 									}
 									// 到期时间
