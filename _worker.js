@@ -231,6 +231,8 @@ function 最终统一编号(订阅文本) {
 export default {
 	async fetch(request, env, ctx) {
 		const countryCount = {};//国家计数必须放在循环外面
+		const 用户名 = env.name
+		const 密码 = env.PASSWORD
 		let 请求URL文本 = request.url.replace(/%5[Cc]/g, '').replace(/\\/g, '');
 		const 请求URL锚点索引 = 请求URL文本.indexOf('#');
 		const 请求URL主体部分 = 请求URL锚点索引 === -1 ? 请求URL文本 : 请求URL文本.slice(0, 请求URL锚点索引);
@@ -817,14 +819,14 @@ export default {
 									if (节点备注.includes('Name')) {
 										节点备注 = 节点备注.replace(
 											/Name\S*/g,
-											`Name:env.name`
+											`Name:用户名`
 										);
 									}
 									// 密码
 									if (节点备注.includes('Password')) {
 										节点备注 = 节点备注.replace(
 											/Password\S*/g,
-											`Password:env.PASSWORD`
+											`Password:密码`
 										);
 									}
 									// 到期时间
