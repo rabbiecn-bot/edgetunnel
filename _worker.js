@@ -608,32 +608,29 @@ export default {
 						if (订阅类型 === 'mixed') {
 							const TLS分片参数 = config_JSON.TLS分片 == 'Shadowrocket' ? `&fragment=${encodeURIComponent('1,40-60,30-50,tlshello')}` : config_JSON.TLS分片 == 'Happ' ? `&fragment=${encodeURIComponent('3,1,tlshello')}` : '';
 							let 完整优选IP = [], 其他节点LINK = '', 反代IP池 = [];
+							let analytics = await env.KV.get("Analytics.txt");//流量统计1
+							// ===== 本月流量解析 =====
+							function 获取本月流量(host, analytics) {
+								if (!analytics || !host) return null;
+
+								const lines = analytics.split('\n');
+								for (const line of lines) {
+									const m = line.match(/^([^:]+?)\s+本月流量:\s+([0-9.]+)\s+MB$/);
+									if (m) {
+										const domain = m[1].trim();
+										if (host === domain || host.endsWith('.' + domain)) {
+											return m[2] + " MB";
+										}
+									}
+								}
+								return null;
+							}
+
 
 							if (!url.searchParams.has('sub') && config_JSON.优选订阅生成.local) { // 本地生成订阅
 								let 完整优选列表 = [];//更改后的代码
 								const kvData = await env.KV.get('ADD.txt');
-								let analytics = await env.KV.get("Analytics.txt");//流量统计1
-								// ===== 本月流量解析 =====
-								function 获取本月流量(host, analytics) {
 								
-									if (!analytics || !host) {
-										return null;
-									}
-								
-									const regex = new RegExp(
-										"^" + host.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') +
-										"\\s+本月流量:\\s+([0-9.]+)\\s+MB",
-										"mi"
-									);
-								
-									const match = analytics.match(regex);
-								
-									if (match) {
-										return match[1] + " MB";
-									}
-								
-									return null;
-								}
 								// ===== 环境变量额外节点 =====
 								const extraNodesRaw =
 									(env.EXTRA_NODES || '').trim();
@@ -888,7 +885,7 @@ export default {
 									if (节点备注.includes('本月已用流量')) {//流量统计2
 									
 										const 流量 = 获取本月流量(
-											节点地址,
+											config_JSON.HOSTS[0],
 											analytics
 										);
 									
