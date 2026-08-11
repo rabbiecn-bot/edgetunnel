@@ -610,22 +610,22 @@ export default {
 							let 完整优选IP = [], 其他节点LINK = '', 反代IP池 = [];
 							let analytics = await env.KV.get("Analytics.txt");//流量统计1
 							// ===== 本月流量解析 =====
-							function 获取本月流量(host, analytics) {
+							function 获取已用流量(host, analytics) {
 								if (!analytics || !host) return null;
 
 								const lines = analytics.split('\n');
 								for (const line of lines) {
-									const m = line.match(/^([^:]+?)\s+本月流量:\s+([0-9.]+)\s+MB$/);
-									if (m) {
-										const domain = m[1].trim();
-										if (host === domain || host.endsWith('.' + domain)) {
-											return m[2] + " MB";
-										}
+								const m = line.match(/^(\S+)\s+流量:\s+([\d.]+)(?:\/[\d.-]+)?\s+MB/);
+								if (m) {
+									const domain = m[1].trim();
+									const used = m[2];
+									if (host === domain || host.endsWith('.' + domain)) {
+									return used + " MB";
 									}
+								}
 								}
 								return null;
 							}
-
 
 							if (!url.searchParams.has('sub') && config_JSON.优选订阅生成.local) { // 本地生成订阅
 								let 完整优选列表 = [];//更改后的代码
@@ -881,18 +881,18 @@ export default {
 											`更新:${nowDate}`
 										);
 									}//以上更改1
-									// 本月计量
-									if (节点备注.includes('本月计量')) {//流量统计2
+									// 已用流量
+									if (节点备注.includes('已用')) {//流量统计2
 									
-										const 流量 = 获取本月流量(
+										const 流量 = 获取已用流量(
 											config_JSON.HOSTS[0],
 											analytics
 										);
 									
 										if (流量) {
 											节点备注 = 节点备注.replace(
-												/本月计量\S*/g,
-												`本月计量：${流量}`
+												/已用\S*/g,
+												`已用：${流量}`
 											);
 										}
 									
