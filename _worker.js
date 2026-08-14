@@ -841,17 +841,17 @@ export default {
 
 									// ===== 自动替换备注 =====更改1
 									// 用户名
-									if (节点备注.includes('Name')) {
+									if (节点备注.includes('用户名')) {
 										节点备注 = 节点备注.replace(
-											/Name\S*/g,
-											`Name:${用户名}`
+											/用户名\S*/g,
+											`用户名:${用户名}`
 										);
 									}
 									// 密码
-									if (节点备注.includes('Password')) {
+									if (节点备注.includes('密码')) {
 										节点备注 = 节点备注.replace(
-											/Password\S*/g,
-											`Password:${密码}`
+											/密码\S*/g,
+											`密码:${密码}`
 										);
 									}
 									// 到期时间
@@ -878,7 +878,7 @@ export default {
 										);
 									}
 									// 本月已用流量
-									if (节点备注.includes('已用流量')) {//流量统计2
+									if (节点备注.includes('已用')) {//流量统计2
 									
 										const 流量 = 获取已用流量(
 											config_JSON.HOSTS[0],
