@@ -849,14 +849,16 @@ export default {
 										节点备注 = originalRemark;
 									}
 									if (节点备注.includes('账号')) {
-										const 账号 = config_JSON?.优选订阅生成?.SUBNAME || '';
+										//加判断是否邮箱号
+										const subName = config_JSON?.优选订阅生成?.SUBNAME || '';
+										const 账号 = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(subName)
+											? subName
+											: '？未注册';
 
-										if (账号) {
-											节点备注 = 节点备注.replace(
-												/账号\S*/g,
-												`账号:${账号}`
-											);
-										}
+										节点备注 = 节点备注.replace(
+											/账号\S*/g,
+											`账号:${账号}`
+										);
 									}
 
 									// 到期时间
