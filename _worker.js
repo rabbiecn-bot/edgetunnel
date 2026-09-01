@@ -572,6 +572,56 @@ export default {
 
 							return null;
 						}
+						function 获取已用天数(host, analytics) {
+							if (!analytics || !host) return null;
+
+							const lines = analytics.split('\n');
+
+							for (const line of lines) {
+								const m = line.match(
+									/^(\S+)\s+流量:.*?\|\s*到期:\s*(\d{4}-\d{2}-\d{2}).*?\|\s*周期:\s*(\d+)/
+								);
+
+								if (m) {
+									const domain = m[1].trim();
+									const expireDate = m[2];
+									const cycleDays = Number(m[3]);
+
+									if (host === domain || host.endsWith('.' + domain)) {
+										// 当前 UTC+8 日期
+										const now = new Date();
+										const todayUTC8 = new Date(
+											Date.UTC(
+												now.getUTCFullYear(),
+												now.getUTCMonth(),
+												now.getUTCDate()
+											)
+										);
+
+										// 到期日期
+										const expireUTC = new Date(
+											`${expireDate}T00:00:00Z`
+										);
+
+										// 剩余天数
+										const remainingDays = Math.max(
+											0,
+											Math.ceil(
+												(expireUTC.getTime() - todayUTC8.getTime()) / 86400000
+											)
+										);
+
+										// 已用天数
+										return Math.max(
+											0,
+											cycleDays - remainingDays
+										);
+									}
+								}
+							}
+
+							return null;
+						}
 						// ===== 本月流量解析 =====
 						function 获取已用流量(host, analytics) {
 							if (!analytics || !host) return null;
@@ -857,7 +907,7 @@ export default {
 
 										节点备注 = 节点备注.replace(
 											/账号\S*/g,
-											`:${账号}`
+											`${账号}`
 										);
 									}
 
@@ -880,6 +930,10 @@ export default {
 											config_JSON.HOSTS[0],
 											analytics
 										);
+										let 天数=获取已用天数(
+											config_JSON.HOSTS[0],
+											analytics
+										)
 
 										if (流量) {
 											const mb = parseFloat(流量);
@@ -890,7 +944,7 @@ export default {
 
 											节点备注 = 节点备注.replace(
 												/已用\S*/g,
-												`已用：${流量}`
+												`已用:${流量}|${天数}天`
 											);
 										}
 									}
