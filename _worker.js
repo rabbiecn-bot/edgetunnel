@@ -862,20 +862,24 @@ export default {
 										}
 									}
 									// 本月已用流量
-									if (节点备注.includes('已用')) {//流量统计2
+									if (节点备注.includes('已用')) {
+									    let 流量 = 获取已用流量(
+									        config_JSON.HOSTS[0],
+									        analytics
+									    );
 									
-										const 流量 = 获取已用流量(
-											config_JSON.HOSTS[0],
-											analytics
-										);
+									    if (流量) {
+									        const mb = parseFloat(流量);
 									
-										if (流量) {
-											节点备注 = 节点备注.replace(
-												/已用\S*/g,
-												`已用：${流量}`
-											);
-										}
+									        if (mb >= 1024) {
+									            流量 = `${(mb / 1024).toFixed(2)} GB`;
+									        }
 									
+									        节点备注 = 节点备注.replace(
+									            /已用\S*/g,
+									            `已用：${流量}`
+									        );
+									    }
 									}
 
 									if (节点备注.includes('更新')) {
