@@ -241,8 +241,6 @@ function 最终统一编号(订阅文本) {
 export default {
 	async fetch(request, env, ctx) {
 		const countryCount = {};//国家计数必须放在循环外面
-		const 用户名 = env.name
-		const 密码 = env.PASSWORD
 		let 请求URL文本 = request.url.replace(/%5[Cc]/g, '').replace(/\\/g, '');
 		const 请求URL锚点索引 = 请求URL文本.indexOf('#');
 		const 请求URL主体部分 = 请求URL锚点索引 === -1 ? 请求URL文本 : 请求URL文本.slice(0, 请求URL锚点索引);
@@ -544,21 +542,7 @@ export default {
 						if (作为优选订阅生成器) ctx.waitUntil(请求日志记录(env, request, 访问IP, 'Get_Best_SUB', config_JSON, false,true));
 						else ctx.waitUntil(请求日志记录(env, request, 访问IP, 'Get_SUB', config_JSON,false,true));
 						const ua = UA.toLowerCase();
-						//更改1:到期时间从环境变量中读取
-						// 读取环境变量 EXPIRE（格式 YYYY-MM-DD），默认2099-12-31
-						const EXPIRE = env.EXPIRE || '2099-12-31';
-
-						// 将日期转换成 UTC+8 时间戳（秒）
-						const expireDateObj = new Date(EXPIRE + 'T15:59:59Z'); 
-						// 为什么是15:59:59Z？因为 UTC+8 比 UTC 快8小时
-						const expire = Math.floor(expireDateObj.getTime() / 1000);
-
-						// 转换成 YYYY-MM-DD 格式（UTC+8）
-						const year = expireDateObj.getUTCFullYear();
-						const month = String(expireDateObj.getUTCMonth() + 1).padStart(2, '0');
-						const day = String(expireDateObj.getUTCDate()).padStart(2, '0');
-						const expireDate = `${year}-${month}-${day}`;
-
+						let analytics = await env.KV.get("Analytics.txt");
 						//当前时间 UTC+8(精确到时分秒)
 						const nowDateObj = new Date(Date.now() + 8 * 3600 * 1000);
 						const nowDate =
@@ -567,24 +551,65 @@ export default {
 						`${String(nowDateObj.getUTCHours()).padStart(2, '0')}:` +
 						`${String(nowDateObj.getUTCMinutes()).padStart(2, '0')}:` +
 						`${String(nowDateObj.getUTCSeconds()).padStart(2, '0')}`;
-						// 剩余天数，UTC+8
-						const remainingDays = Math.max(0, Math.ceil((expireDateObj.getTime() - (Date.now() + 8*3600*1000)) / 86400000));
-						//以上更改1为到期时间处理部分
+						function 获取到期时间(host, analytics) {
+							if (!analytics || !host) return null;
 
+							const lines = analytics.split('\n');
+
+							for (const line of lines) {
+								const m = line.match(/^(\S+)\s+流量:.*?\|\s*到期:\s*(\d{4}-\d{2}-\d{2})/);
+
+								if (m) {
+									const domain = m[1].trim();
+									const expire = m[2];
+
+									if (host === domain || host.endsWith('.' + domain)) {
+										return expire;
+									}
+								}
+							}
+
+							return null;
+						}
+						// ===== 本月流量解析 =====
+						function 获取已用流量(host, analytics) {
+							if (!analytics || !host) return null;
+
+							const lines = analytics.split('\n');
+							for (const line of lines) {
+							const m = line.match(/^(\S+)\s+流量:\s+([\d.]+)(?:\/[\d.-]+)?\s+MB/);
+							if (m) {
+								const domain = m[1].trim();
+								const used = m[2];
+								if (host === domain || host.endsWith('.' + domain)) {
+								return used + " MB";
+								}
+							}
+							}
+							return null;
+						}
 						const responseHeaders = {
 							"content-type": "text/plain; charset=utf-8",
 							"Profile-Update-Interval": config_JSON.优选订阅生成.SUBUpdateTime,
 							"Profile-web-page-url": 'https://dash.rabbiewu.com/',
 							"Cache-Control": "no-store",
 						};
+
 						if (config_JSON.CF.Usage.success) {
 							const pagesSum = config_JSON.CF.Usage.pages;
 							const workersSum = config_JSON.CF.Usage.workers;
 							const total = Number.isFinite(config_JSON.CF.Usage.max) ? (config_JSON.CF.Usage.max / 1000) * 1024 : 1024 * 100;
-							const expire = env.EXPIRE
-								? Math.floor(new Date(env.EXPIRE).getTime() / 1000)
+							const expireDate = 获取到期时间(
+								config_JSON.HOSTS[0],
+								analytics
+							);
+
+							const expire = expireDate
+								? Math.floor(new Date(expireDate + "T23:59:59+08:00").getTime() / 1000)
 								: 4102329600;
-							responseHeaders["Subscription-Userinfo"] = `upload=${pagesSum}; download=${workersSum}; total=${total}; expire=${expire}`;
+
+							responseHeaders["Subscription-Userinfo"] =
+								`upload=${pagesSum}; download=${workersSum}; total=${total}; expire=${expire}`;
 						}
 						const isSubConverterRequest = url.searchParams.has('b64') || url.searchParams.has('base64') || request.headers.get('subconverter-request') || request.headers.get('subconverter-version') || ua.includes('subconverter') || ua.includes(('CF-Workers-SUB').toLowerCase()) || 作为优选订阅生成器;
 						const 订阅类型 = isSubConverterRequest
@@ -608,25 +633,7 @@ export default {
 						let 订阅内容 = '';
 						if (订阅类型 === 'mixed') {
 							const TLS分片参数 = config_JSON.TLS分片 == 'Shadowrocket' ? `&fragment=${encodeURIComponent('1,40-60,30-50,tlshello')}` : config_JSON.TLS分片 == 'Happ' ? `&fragment=${encodeURIComponent('3,1,tlshello')}` : '';
-							let 完整优选IP = [], 其他节点LINK = '', 反代IP池 = [];
-							let analytics = await env.KV.get("Analytics.txt");//流量统计1
-							// ===== 本月流量解析 =====
-							function 获取已用流量(host, analytics) {
-								if (!analytics || !host) return null;
-
-								const lines = analytics.split('\n');
-								for (const line of lines) {
-								const m = line.match(/^(\S+)\s+流量:\s+([\d.]+)(?:\/[\d.-]+)?\s+MB/);
-								if (m) {
-									const domain = m[1].trim();
-									const used = m[2];
-									if (host === domain || host.endsWith('.' + domain)) {
-									return used + " MB";
-									}
-								}
-								}
-								return null;
-							}
+							let 完整优选IP = [], 其他节点LINK = '', 反代IP池 = [];							
 							if (!url.searchParams.has('sub') && config_JSON.优选订阅生成.local) { // 本地生成订阅
 								let 完整优选列表 = [];
 								const kvData = await env.KV.get('ADD.txt');//更改后的代码
@@ -841,43 +848,18 @@ export default {
 										节点备注 = originalRemark;
 									}
 
-									// ===== 自动替换备注 =====更改1
-									// 用户名
-									if (节点备注.includes('用户名')) {
-										节点备注 = 节点备注.replace(
-											/用户名\S*/g,
-											`用户名:${用户名}`
-										);
-									}
-									// 密码
-									if (节点备注.includes('密码')) {
-										节点备注 = 节点备注.replace(
-											/密码\S*/g,
-											`密码:${密码}`
-										);
-									}
 									// 到期时间
 									if (节点备注.includes('到期')) {
-										节点备注 = 节点备注.replace(
-											/到期\S*/g,
-											`到期:${expireDate}`
+										const 到期 = 获取到期时间(
+											config_JSON.HOSTS[0],
+											analytics
 										);
-									}
-
-									// 剩余天数
-									if (节点备注.includes('剩余')) {
-										节点备注 = 节点备注.replace(
-											/剩余\S*/g,
-											`剩余:${remainingDays}天`
-										);
-									}
-
-									// 更新时间
-									if (节点备注.includes('更新')) {
-										节点备注 = 节点备注.replace(
-											/更新\S*/g,
-											`更新:${nowDate}`
-										);
+										if (到期) {
+											节点备注 = 节点备注.replace(
+												/到期\S*/g,
+												`到期:${到期}`
+											);
+										}
 									}
 									// 本月已用流量
 									if (节点备注.includes('已用')) {//流量统计2
@@ -894,7 +876,14 @@ export default {
 											);
 										}
 									
-									}//以上更改1
+									}
+
+									if (节点备注.includes('更新')) {
+										节点备注 = 节点备注.replace(
+											/更新\S*/g,
+											`更新:${nowDate}`
+										);
+									}
 
 								} else {
 									// 不规范的格式，跳过处理返回null
