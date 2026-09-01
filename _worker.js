@@ -25,7 +25,7 @@ const countryMap = {
   "中国香港": ["香港", "HK", "Hong Kong"],
   "中国澳门": ["澳门", "中国澳门", "MO", "Macau", "Macao"],
   "中国台湾": ["台湾", "台北", "TW", "Taiwan", "Taipei"],
-  "英国": ["英国", "UK", "United Kingdom", "London"],
+  "英国": ["英国", "GB","UK", "United Kingdom", "London"],
   "德国": ["德国", "DE", "Germany", "Frankfurt"],
   "法国": ["法国", "FR", "France", "Paris"],
   "荷兰": ["荷兰", "NL", "Netherlands", "Amsterdam"],
