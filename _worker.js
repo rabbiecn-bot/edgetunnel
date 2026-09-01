@@ -939,12 +939,12 @@ export default {
 											const mb = parseFloat(流量);
 
 											if (mb >= 1024) {
-												流量 = `${(mb / 1024).toFixed(2)} GB`;
+												流量 = `${(mb / 1024).toFixed(2)}GB`;
 											}
 
 											节点备注 = 节点备注.replace(
 												/已用\S*/g,
-												`已用:${流量}|${天数}天`
+												`已用:${流量} | ${天数}天`
 											);
 										}
 									}
