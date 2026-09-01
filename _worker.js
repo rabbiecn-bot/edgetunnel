@@ -542,7 +542,6 @@ export default {
 						if (作为优选订阅生成器) ctx.waitUntil(请求日志记录(env, request, 访问IP, 'Get_Best_SUB', config_JSON, false,true));
 						else ctx.waitUntil(请求日志记录(env, request, 访问IP, 'Get_SUB', config_JSON,false,true));
 						const ua = UA.toLowerCase();
-						let analytics = await env.KV.get("Analytics.txt");
 						//当前时间 UTC+8(精确到时分秒)
 						const nowDateObj = new Date(Date.now() + 8 * 3600 * 1000);
 						const nowDate =
@@ -551,6 +550,8 @@ export default {
 						`${String(nowDateObj.getUTCHours()).padStart(2, '0')}:` +
 						`${String(nowDateObj.getUTCMinutes()).padStart(2, '0')}:` +
 						`${String(nowDateObj.getUTCSeconds()).padStart(2, '0')}`;
+						///////从KV中获取数据//////
+						let analytics = await env.KV.get("Analytics.txt");
 						function 获取到期时间(host, analytics) {
 							if (!analytics || !host) return null;
 
@@ -847,6 +848,16 @@ export default {
 
 										节点备注 = originalRemark;
 									}
+									if (节点备注.includes('账号')) {
+										const 账号 = config_JSON?.优选订阅生成?.SUBNAME || '';
+
+										if (账号) {
+											节点备注 = 节点备注.replace(
+												/账号\S*/g,
+												`账号:${账号}`
+											);
+										}
+									}
 
 									// 到期时间
 									if (节点备注.includes('到期')) {
@@ -863,23 +874,23 @@ export default {
 									}
 									// 本月已用流量
 									if (节点备注.includes('已用')) {
-									    let 流量 = 获取已用流量(
-									        config_JSON.HOSTS[0],
-									        analytics
-									    );
-									
-									    if (流量) {
-									        const mb = parseFloat(流量);
-									
-									        if (mb >= 1024) {
-									            流量 = `${(mb / 1024).toFixed(2)} GB`;
-									        }
-									
-									        节点备注 = 节点备注.replace(
-									            /已用\S*/g,
-									            `已用：${流量}`
-									        );
-									    }
+										let 流量 = 获取已用流量(
+											config_JSON.HOSTS[0],
+											analytics
+										);
+
+										if (流量) {
+											const mb = parseFloat(流量);
+
+											if (mb >= 1024) {
+												流量 = `${(mb / 1024).toFixed(2)} GB`;
+											}
+
+											节点备注 = 节点备注.replace(
+												/已用\S*/g,
+												`已用：${流量}`
+											);
+										}
 									}
 
 									if (节点备注.includes('更新')) {
