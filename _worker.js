@@ -898,7 +898,18 @@ export default {
 
 										节点备注 = originalRemark;
 									}
+									if (节点备注.includes('账号')) {
+										//加判断是否邮箱号
+										const subName = config_JSON?.优选订阅生成?.SUBNAME || '';
+										const 账号 = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(subName)
+											? subName
+											: '？未注册';
 
+										节点备注 = 节点备注.replace(
+											/账号\S*/g,
+											`${账号}`
+										);
+									}
 									// ===== 自动替换备注 =====更改1
 									// 到期时间
 									if (节点备注.includes('到期')) {
