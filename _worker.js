@@ -6167,7 +6167,7 @@ async function 读取config_JSON(env, hostname, userID, UA = "Mozilla/5.0", 重�
 			},
 			SUB: null,
 			SUBNAME: "edge" + "tunnel",
-			SUBUpdateTime: 3, // 订阅更新时间（小时）
+			SUBUpdateTime: 24, // 订阅更新时间（小时）
 			TOKEN: await MD5MD5(hostname + userID),
 		},
 		订阅转换配置: {
