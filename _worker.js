@@ -7111,7 +7111,7 @@ async function nginx() {
 	<html lang="zh-CN">
 	<head>
 	<meta charset="UTF-8">
-	<title>服务说明</title>
+	<title>小莫面板</title>
 	<style>
 		body {
 		margin: 0;
