@@ -739,7 +739,8 @@ export default {
 								const 原始其他节点数组 =
 								    [...new Set(其他节点)];
 								const allowMap = {};
-								const raw = (env.ALLOW_COUNTRIES || '').trim();
+								
+								const raw = ((await env.YOUR_KV.get('ALLOW_COUNTRIES')) || '').trim();
 								if (raw) {
 								    raw.split(',').forEach(item => {
 								        const m = item.trim().match(/^(.+?)(\d+)$/);
@@ -748,6 +749,7 @@ export default {
 								        }
 								    });
 								}
+
 								// API国家池
 								const apiCountryPool = {};
 								const apiFinalNodes = [];
