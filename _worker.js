@@ -740,7 +740,7 @@ export default {
 								    [...new Set(其他节点)];
 								const allowMap = {};
 								
-								const raw = ((await env.YOUR_KV.get('ALLOW_COUNTRIES')) || '').trim();
+								const raw = ((await env.KV.get('ALLOW_COUNTRIES')) || '').trim();
 								if (raw) {
 								    raw.split(',').forEach(item => {
 								        const m = item.trim().match(/^(.+?)(\d+)$/);
